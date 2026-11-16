@@ -30,6 +30,7 @@ class Manifest:
     publish_targets: list = field(default_factory=lambda: ["youtube"])
     idea: dict | None = None
     script: dict | None = None
+    research_sources: list = field(default_factory=list)
     created_at: str = ""
 
     def save(self, run_dir: Path) -> Path:

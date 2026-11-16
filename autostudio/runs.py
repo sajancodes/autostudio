@@ -5,8 +5,8 @@ import json
 import time
 from pathlib import Path
 
-STEPS = ["idea", "script", "clips", "edit", "qc", "upload"]
-SUBDIRS = ["clips", "audio", "subs"]
+STEPS = ["research", "idea", "script", "clips", "edit", "qc", "upload"]
+SUBDIRS = ["clips", "audio", "subs", "research"]
 
 
 def new_run_id() -> str:

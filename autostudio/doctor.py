@@ -1,4 +1,8 @@
-"""`autostudio doctor`: checks ffmpeg, keys, OAuth, disk. Exit code 1 only on blockers."""
+"""`autostudio doctor`: checks ffmpeg, keys, OAuth, disk, browser engine.
+
+Exit code 1 only on blockers; the browser engine only ever warns, because
+web research is optional.
+"""
 from __future__ import annotations
 
 import importlib.util
@@ -33,6 +37,28 @@ def _nvenc_works() -> bool:
         return False
 
 
+def _engine_check(s: Settings) -> tuple[str, str, str]:
+    """Is the browser engine up? Research is optional, so this only ever warns."""
+    label = "Browser engine"
+    if not _has("httpx"):
+        return (WARN, label, "httpx missing: pip install -r requirements.txt (research is optional)")
+    if not s.browser_engine_api_key:
+        return (WARN, label, "BROWSER_ENGINE_API_KEY not set (research is optional)")
+    from autostudio.browser import BrowserClient, BrowserError
+
+    try:
+        client = BrowserClient(base_url=s.browser_engine_url, api_key=s.browser_engine_api_key, timeout_s=3.0)
+    except BrowserError as e:
+        return (WARN, label, str(e))
+    try:
+        client.health()
+    except BrowserError as e:
+        return (WARN, label, f"not reachable at {s.browser_engine_url} ({e}); research is optional")
+    finally:
+        client.shutdown()
+    return (OK, label, f"healthy at {s.browser_engine_url}")
+
+
 def run_checks(s: Settings) -> list[tuple[str, str, str]]:
     r: list[tuple[str, str, str]] = []
     v = sys.version_info
@@ -56,6 +82,7 @@ def run_checks(s: Settings) -> list[tuple[str, str, str]]:
              else (WARN, "YouTube token", "missing: run `python -m autostudio auth youtube`"))
     free_gb = shutil.disk_usage(s.runs_dir.parent).free / 1e9
     r.append((OK if free_gb >= 2 else WARN, "Disk free", f"{free_gb:.1f} GB"))
+    r.append(_engine_check(s))
     return r
 
 

@@ -43,6 +43,8 @@ class Settings:
     max_concurrent_generations: int
     max_retries: int
     runs_dir: Path
+    browser_engine_url: str
+    browser_engine_api_key: str
     fps: int = 30
 
 
@@ -64,4 +66,6 @@ def load_settings(env_file: Path | None = None) -> Settings:
         max_concurrent_generations=_i("MAX_CONCURRENT_GENERATIONS", 2),
         max_retries=_i("MAX_RETRIES", 2),
         runs_dir=PROJECT_ROOT / "runs",
+        browser_engine_url=os.getenv("BROWSER_ENGINE_URL", "http://127.0.0.1:8765").rstrip("/"),
+        browser_engine_api_key=os.getenv("BROWSER_ENGINE_API_KEY", "").strip(),
     )
